@@ -10,6 +10,14 @@
   --cream:#fdf8f2; --warm-white:#fff9f4; --blush:#fce8dc;
   --peach:#f5c6a0; --amber:#e8924a; --rust:#c9622f;
   --text-dark:#2d1f0f; --text-mid:#5a3e28; --text-light:#a07850;
+  
+  /* Baseline Dynamic Variables */
+  --flame-size: 1;
+  --flame-bright: 1;
+  --t-outer-speed: 0.45s;
+  --t-inner-speed: 0.32s;
+  --pf-speed: 0.55s;
+  --heat-spread-speed: 2.8s;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark);overflow-x:hidden;}
@@ -17,12 +25,9 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 /* HERO */
 .hero{background:linear-gradient(135deg,#fff5ec,#fde8d0 50%,#fad4b8);text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(232,146,74,.18),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(249,200,150,.25),transparent 50%);}
-.hero-badge{display:inline-block;background:var(--blush);border:1px solid var(--peach);border-radius:20px;padding:6px 20px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);margin-bottom:20px;font-weight:700;}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4.4rem);color:var(--text-dark);line-height:1.1;position:relative;}
 .hero h1 span{color:var(--rust);}
 .hero-sub{margin:18px auto 0;max-width:600px;color:var(--text-mid);font-size:1.05rem;line-height:1.7;position:relative;}
-.hero-flame{font-size:3.5rem;margin-top:30px;animation:flicker 1.4s ease-in-out infinite alternate;display:inline-block;}
-@keyframes flicker{0%{transform:scaleY(1) rotate(-2deg);}100%{transform:scaleY(1.1) rotate(2deg);filter:brightness(1.15);}}
 
 /* INTRO */
 .intro-card{max-width:780px;margin:48px auto;background:var(--warm-white);border:1px solid #f0dac8;border-radius:20px;padding:40px 44px;box-shadow:0 4px 30px rgba(200,100,40,.08);}
@@ -41,15 +46,106 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 .icon-cond{background:#fce8dc;}.icon-conv{background:#d6eaf8;}.icon-rad{background:#fef9e7;}
 .card-title{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--text-dark);}
 .card-subtitle{font-size:.8rem;color:var(--text-light);margin-top:2px;letter-spacing:.05em;text-transform:uppercase;}
+
 .anim-box{width:100%;position:relative;overflow:hidden;background:#fffaf6;border-bottom:1px solid #f0dac8;}
 .card-body{padding:20px 28px 24px;flex:1;}
 .card-body p{color:var(--text-mid);line-height:1.75;font-size:.94rem;}
+
+/* Dynamic Status Descriptions */
+.dynamic-status {
+  color: var(--rust);
+  font-weight: 700;
+  margin-bottom: 12px;
+  min-height: 44px;
+  transition: opacity 0.3s ease;
+  padding: 10px;
+  background: rgba(201, 98, 47, 0.08);
+  border-radius: 8px;
+  border-left: 4px solid var(--rust);
+  font-size: 0.9rem;
+}
+
 .fact-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
 .chip{padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.05em;}
 .chip-cond{background:#fce8dc;color:var(--rust);}.chip-conv{background:#d6eaf8;color:#1a6fa0;}.chip-rad{background:#fef9e7;color:#a07020;}
 
+/* Dark Theme Flame Slider (Reference Match) */
+.slider-row {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: #14171d;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 15px;
+  z-index: 20;
+}
+.slider-label {
+  font-family: monospace;
+  color: #727b87;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+.slider-val {
+  font-family: monospace;
+  color: #e5e9f0;
+  font-size: 0.8rem;
+  width: 32px;
+  text-align: right;
+}
+.range-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: linear-gradient(to right, #ff6b35 0%, #333 0%);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  transition: transform 0.1s;
+}
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Floating Temperature Readout */
+.temp-overlay {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: #2d1f0f;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 12px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Animations */
+@keyframes tflm{
+  from{transform:scaleX(var(--flame-size)) scaleY(var(--flame-size)); filter:brightness(var(--flame-bright));}
+  to{transform:scaleX(calc(var(--flame-size) * .78)) scaleY(calc(var(--flame-size) * 1.18)); filter:brightness(calc(var(--flame-bright) * 1.2));}
+}
+
 /* ══════════════ CONDUCTION ══════════════ */
-#cond-anim{height:310px;background:linear-gradient(180deg,#fff8f2,#fef2e8);}
+#cond-anim{height:355px;background:linear-gradient(180deg,#fff8f2,#fef2e8);}
 
 .lighter-body{position:absolute;left:16px;top:105px;width:30px;height:60px;background:linear-gradient(180deg,#f0c855,#c89030 55%,#a06820);border-radius:7px 7px 3px 3px;z-index:5;box-shadow:2px 3px 8px rgba(0,0,0,.22);}
 .lighter-head{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:20px;height:22px;background:linear-gradient(180deg,#d8e0e8,#9098a8);border-radius:5px 5px 2px 2px;border:1.5px solid #788090;}
@@ -59,14 +155,13 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 .lighter-btn{position:absolute;top:8px;right:-6px;width:12px;height:18px;background:linear-gradient(180deg,#e56030,#bf3010);border-radius:4px;box-shadow:1px 1px 4px rgba(0,0,0,.3);}
 .lighter-grip{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:22px;height:32px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,transparent 2px 5px);}
 
-.torch-flame-wrap{position:absolute;left:28px;top:76px;z-index:6;}
-.t-outer{width:24px;height:34px;background:radial-gradient(ellipse at 50% 100%,#fff9c4 0%,#ffb300 45%,#e65100 80%,transparent 100%);border-radius:50% 50% 38% 38%;animation:tflm .45s ease-in-out infinite alternate;}
-.t-inner{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:11px;height:20px;background:radial-gradient(ellipse at 50% 100%,#ffffff,#fff9c4 60%,transparent);border-radius:50%;animation:tflm .32s ease-in-out infinite alternate-reverse;}
-@keyframes tflm{from{transform:scaleX(1) scaleY(1);}to{transform:scaleX(.78) scaleY(1.18);}}
+.torch-flame-wrap{position:absolute;left:28px;top:76px;z-index:6; display:flex; justify-content:center;}
+.t-outer{width:24px;height:34px;background:radial-gradient(ellipse at 50% 100%,#fff9c4 0%,#ffb300 45%,#e65100 80%,transparent 100%);border-radius:50% 50% 38% 38%;animation:tflm var(--t-outer-speed) ease-in-out infinite alternate; transform-origin:bottom;}
+.t-inner{position:absolute;bottom:3px;left:0;right:0;margin:auto;width:11px;height:20px;background:radial-gradient(ellipse at 50% 100%,#ffffff,#fff9c4 60%,transparent);border-radius:50%;animation:tflm var(--t-inner-speed) ease-in-out infinite alternate-reverse; transform-origin:bottom;}
 
 .rod-wrap{position:absolute;left:44px;top:118px;right:16px;height:30px;z-index:3;}
 .rod{width:100%;height:100%;background:linear-gradient(180deg,#ddd8cc,#b8b0a0 50%,#ccc8bc);border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.13);overflow:hidden;position:relative;}
-.rod-heat{position:absolute;top:0;left:0;bottom:0;background:linear-gradient(90deg,rgba(255,110,20,.8) 0%,rgba(255,200,70,.5) 55%,transparent 100%);animation:heatSpread 2.8s ease-in-out infinite;border-radius:5px;}
+.rod-heat{position:absolute;top:0;left:0;bottom:0;background:linear-gradient(90deg,rgba(255,110,20,.8) 0%,rgba(255,200,70,.5) 55%,transparent 100%);animation:heatSpread var(--heat-spread-speed) ease-in-out infinite;border-radius:5px; filter:brightness(var(--flame-bright));}
 @keyframes heatSpread{0%{width:5%;}65%{width:90%;}100%{width:5%;}}
 
 .mol-row{position:absolute;top:116px;left:50px;display:flex;align-items:center;gap:3px;z-index:4;}
@@ -78,7 +173,7 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 .lbl-h{background:#c9622f;}.lbl-c{background:#4a9cc0;}
 
 /* Conductor / Insulator bars */
-.ci-demo{position:absolute;bottom:10px;left:14px;right:14px;display:flex;gap:8px;z-index:5;}
+.ci-demo{position:absolute;bottom:60px;left:14px;right:14px;display:flex;gap:8px;z-index:5;}
 .ci-item{flex:1;border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.85);border:1px solid #e8d4c0;}
 .ci-item h4{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
 .ci-cond h4{color:#c9622f;}.ci-ins h4{color:#2a7a60;}
@@ -91,9 +186,9 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 .ci-eg{font-size:.6rem;color:var(--text-mid);}
 
 /* ══════════════ CONVECTION ══════════════ */
-#conv-anim{height:320px;background:linear-gradient(180deg,#f0f8ff,#e4f0fb);}
+#conv-anim{height:355px;background:linear-gradient(180deg,#f0f8ff,#e4f0fb);}
 
-.conv-layout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;}
+.conv-layout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end; padding-bottom:50px;}
 .pot-outer{position:relative;margin-bottom:26px;}
 .water-area{position:absolute;top:14px;left:14px;right:14px;bottom:0;border-radius:0 0 22px 22px;overflow:hidden;background:linear-gradient(180deg,#5dade2,#1a5276);}
 .temp-lbl{position:absolute;font-size:.58rem;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.4);text-transform:uppercase;}
@@ -102,22 +197,19 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 .bbl{position:absolute;border-radius:50%;background:rgba(255,255,255,.52);width:var(--bsz,8px);height:var(--bsz,8px);left:var(--bx,50%);bottom:-10px;animation:bblUp var(--bd,2.2s) ease-in var(--bs,0s) infinite;}
 @keyframes bblUp{0%{transform:translateY(0) translateX(0);opacity:.7;}80%{opacity:.85;}100%{transform:translateY(-115px) translateX(var(--bv,5px));opacity:0;}}
 .pot-flames{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);display:flex;gap:4px;}
-.pf{width:15px;height:20px;background:radial-gradient(ellipse at 50% 100%,#fff176,#ffb300 50%,#e65100 100%);border-radius:50% 50% 38% 38%;animation:tflm .55s ease-in-out var(--pfd,0s) infinite alternate;}
+.pf{width:15px;height:20px;background:radial-gradient(ellipse at 50% 100%,#fff176,#ffb300 50%,#e65100 100%);border-radius:50% 50% 38% 38%;animation:tflm var(--pf-speed) ease-in-out var(--pfd,0s) infinite alternate; transform-origin:bottom;}
 #conv-canvas{position:absolute;top:0;left:0;pointer-events:none;}
 
 /* ══════════════ RADIATION ══════════════ */
 #rad-anim{height:340px;background:linear-gradient(150deg,#fff9ee,#fde8c8);}
 
 .rad-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:14px 12px;}
-
 .rad-sun{width:72px;height:72px;flex-shrink:0;background:radial-gradient(circle,#fff9c4 8%,#f9a825 58%,#e65100 100%);border-radius:50%;box-shadow:0 0 28px 10px rgba(249,168,37,.4);position:relative;animation:sunP 2.5s ease-in-out infinite alternate;z-index:3;}
 @keyframes sunP{from{box-shadow:0 0 22px 8px rgba(249,168,37,.3);}to{box-shadow:0 0 52px 22px rgba(249,168,37,.55);}}
 .spk{position:absolute;left:50%;top:50%;width:4px;height:22px;background:linear-gradient(#f9d000,transparent);border-radius:2px;transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(calc(var(--sa,0)*45deg));animation:spkA 2s ease-in-out var(--sr,0s) infinite alternate;}
 @keyframes spkA{from{opacity:.5;height:18px;}to{opacity:1;height:28px;}}
-
 .rad-waves-box{flex:1;height:100%;position:relative;overflow:hidden;}
 
-/* Shirts */
 .shirts-col{display:flex;flex-direction:column;gap:12px;flex-shrink:0;}
 .shirt-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .s-lbl{font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;text-align:center;}
@@ -127,11 +219,8 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--text-dark
 @keyframes tpls{from{opacity:.6;}to{opacity:1;}}
 .shirt-svg-wrap{position:relative;}
 
-/* absorb pulse */
 .adot{position:absolute;border-radius:50%;background:rgba(255,100,30,.82);animation:adotAnim var(--ad,1.4s) ease-out var(--adl,0s) infinite;}
 @keyframes adotAnim{0%{transform:scale(0);opacity:.9;}60%{transform:scale(1.5);opacity:.55;}100%{transform:scale(0);opacity:0;}}
-
-/* reflect pulse */
 .rdot{position:absolute;border-radius:50%;background:rgba(200,225,255,.95);animation:rdotAnim var(--rd,1.4s) ease-out var(--rdl,0s) infinite;}
 @keyframes rdotAnim{0%{transform:scale(0) translate(0,0);opacity:.9;}100%{transform:scale(1.2) translate(var(--rx,10px),var(--ry,-10px));opacity:0;}}
 
@@ -151,7 +240,6 @@ footer strong{color:var(--text-mid);}
 <header class="hero">
   <h1>Heat <span>Transfer</span></h1>
   <p class="hero-sub">Heat energy always flows from warmer objects to cooler ones. Discover the three ways heat moves through our world.</p>
-  <div class="hero-flame">🔥</div>
 </header>
 
 <div class="intro-card">
@@ -179,6 +267,9 @@ footer strong{color:var(--text-mid);}
     </div>
 
     <div class="anim-box" id="cond-anim">
+      <!-- Temp Overlay -->
+      <div class="temp-overlay"><span id="cond-temp">150</span>°C</div>
+
       <!-- Lighter body -->
       <div class="lighter-body">
         <div class="lighter-head">
@@ -216,26 +307,28 @@ footer strong{color:var(--text-mid);}
       <!-- Conductor vs Insulator -->
       <div class="ci-demo">
         <div class="ci-item ci-cond">
-          <h4>✅ Conductor — Fast Heat Flow</h4>
+          <h4>✅ Conductor</h4>
           <div class="ci-bar"><div class="ci-flow" style="--cs:1.0s;"></div></div>
-          <div class="ci-eg">🥄 Metal spoon &nbsp;·&nbsp; 🔧 Iron rod &nbsp;·&nbsp; 🪙 Copper wire</div>
         </div>
         <div class="ci-item ci-ins">
-          <h4>🚫 Insulator — Slow Heat Flow</h4>
+          <h4>🚫 Insulator</h4>
           <div class="ci-bar"><div class="ci-flow" style="--cs:4.5s;"></div></div>
-          <div class="ci-eg">🪵 Wood &nbsp;·&nbsp; 🧤 Rubber &nbsp;·&nbsp; 🧴 Plastic &nbsp;·&nbsp; 🧣 Fabric</div>
         </div>
+      </div>
+
+      <!-- Control Slider Row -->
+      <div class="slider-row">
+        <span class="slider-label">FLAME</span>
+        <input type="range" class="range-slider" id="cond-slider" min="0" max="100" value="0">
+        <span class="slider-val" id="cond-val">0%</span>
       </div>
     </div>
 
     <div class="card-body">
+      <!-- Dynamic Description text -->
+      <p id="cond-dynamic-desc" class="dynamic-status">Gentle heat. Molecules vibrate slowly, and energy passes gradually along the rod.</p>
+      
       <p><strong>Conduction</strong> occurs through <em>direct contact</em>. A lighter heats one end of a metal rod — energy passes molecule by molecule as each vibrates faster and collides with its neighbor. Heat spreads along the whole rod. Metals (conductors) do this quickly; wood and rubber (insulators) resist heat flow.</p>
-      <p style="margin-top:10px;">🍳 <strong>Real-life example:</strong> A metal spoon in hot soup heats all the way to the handle — while a wooden spoon stays cool because wood is an insulator!</p>
-      <div class="fact-chips">
-        <span class="chip chip-cond">Occurs in solids</span>
-        <span class="chip chip-cond">Direct contact</span>
-        <span class="chip chip-cond">Molecule vibrations</span>
-      </div>
     </div>
   </div>
 
@@ -250,6 +343,9 @@ footer strong{color:var(--text-mid);}
     </div>
 
     <div class="anim-box" id="conv-anim">
+      <!-- Temp Overlay -->
+      <div class="temp-overlay"><span id="conv-temp">150</span>°C</div>
+
       <div class="conv-layout">
         <div class="pot-outer" id="pot-outer">
           <!-- Pot SVG -->
@@ -280,16 +376,20 @@ footer strong{color:var(--text-mid);}
         </div>
       </div>
       <canvas id="conv-canvas"></canvas>
+      
+      <!-- Control Slider Row -->
+      <div class="slider-row">
+        <span class="slider-label">FLAME</span>
+        <input type="range" class="range-slider" id="conv-slider" min="0" max="100" value="0">
+        <span class="slider-val" id="conv-val">0%</span>
+      </div>
     </div>
 
     <div class="card-body">
+      <!-- Dynamic Description text -->
+      <p id="conv-dynamic-desc" class="dynamic-status">Gentle heat. Water warms slowly, creating a mild and steady convection current.</p>
+
       <p><strong>Convection</strong> creates circular currents. Hot water (orange dots) at the bottom heats up, expands, becomes less dense, and rises. Cool water (blue dots) at the top is denser and sinks — forming a continuous <em>convection current</em> that circulates until the water boils.</p>
-      <p style="margin-top:10px;">🫖 <strong>Real-life example:</strong> Boiling water in a pot — hot molecules rise while cool molecules sink, creating the visible rolling motion!</p>
-      <div class="fact-chips">
-        <span class="chip chip-conv">Liquids &amp; gases</span>
-        <span class="chip chip-conv">Circular currents</span>
-        <span class="chip chip-conv">Density differences</span>
-      </div>
     </div>
   </div>
 
@@ -331,17 +431,13 @@ footer strong{color:var(--text-mid);}
 
         <!-- Shirts -->
         <div class="shirts-col">
-
-          <!-- Dark shirt — absorbs radiation -->
           <div class="shirt-item">
             <div class="shirt-svg-wrap">
               <svg width="58" height="62" viewBox="0 0 58 62" style="display:block;">
                 <polygon points="21,0 37,0 48,11 58,8 52,24 46,19 46,62 12,62 12,19 6,24 0,8 10,11" fill="#1a1a1a" stroke="#111" stroke-width="1.2"/>
                 <polygon points="21,0 29,9 37,0" fill="#0a0a0a"/>
-                <!-- collar detail -->
                 <path d="M21,0 Q29,12 37,0" fill="none" stroke="#333" stroke-width="1"/>
               </svg>
-              <!-- Absorb dots (heat being absorbed into dark shirt) -->
               <div class="adot" style="width:7px;height:7px;left:22px;top:26px;--ad:1.4s;--adl:0s;"></div>
               <div class="adot" style="width:5px;height:5px;left:31px;top:36px;--ad:1.4s;--adl:.4s;"></div>
               <div class="adot" style="width:6px;height:6px;left:16px;top:44px;--ad:1.4s;--adl:.8s;"></div>
@@ -352,7 +448,6 @@ footer strong{color:var(--text-mid);}
             <div class="s-temp hot">🌡 HOT — heats up fast</div>
           </div>
 
-          <!-- White shirt — reflects radiation -->
           <div class="shirt-item">
             <div class="shirt-svg-wrap">
               <svg width="58" height="62" viewBox="0 0 58 62" style="display:block;">
@@ -360,7 +455,6 @@ footer strong{color:var(--text-mid);}
                 <polygon points="21,0 29,9 37,0" fill="#e8e8e0"/>
                 <path d="M21,0 Q29,12 37,0" fill="none" stroke="#ddd" stroke-width="1"/>
               </svg>
-              <!-- Reflect dots (radiation bouncing off white shirt) -->
               <div class="rdot" style="width:6px;height:6px;left:22px;top:28px;--rd:1.5s;--rdl:0.1s;--rx:-16px;--ry:-12px;"></div>
               <div class="rdot" style="width:5px;height:5px;left:33px;top:34px;--rd:1.5s;--rdl:.5s;--rx:14px;--ry:-10px;"></div>
               <div class="rdot" style="width:6px;height:6px;left:18px;top:44px;--rd:1.5s;--rdl:.9s;--rx:-12px;--ry:-14px;"></div>
@@ -369,19 +463,12 @@ footer strong{color:var(--text-mid);}
             <div class="s-lbl lt">🤍 Light = Reflects</div>
             <div class="s-temp cool">❄️ COOL — stays cooler</div>
           </div>
-
         </div>
       </div>
     </div>
 
     <div class="card-body">
       <p><strong>Radiation</strong> requires <em>no matter</em> — heat travels as electromagnetic waves. Darker surfaces absorb more radiation and heat up quickly. Lighter surfaces reflect most radiation and stay much cooler in the same conditions.</p>
-      <p style="margin-top:10px;">☀️ <strong>Real-life example:</strong> On a sunny day, a black shirt absorbs radiation and gets very hot, while a white shirt reflects it and stays cool — that's why we wear light colors in summer!</p>
-      <div class="fact-chips">
-        <span class="chip chip-rad">No matter needed</span>
-        <span class="chip chip-rad">Electromagnetic waves</span>
-        <span class="chip chip-rad">Dark absorbs · Light reflects</span>
-      </div>
     </div>
   </div>
 
@@ -394,9 +481,6 @@ footer strong{color:var(--text-mid);}
     <div class="sum-item"><h3>🔩 Conduction</h3><p>Transfer through <strong>direct contact</strong>. Molecules vibrate and pass energy along. Common in solids like metals.</p></div>
     <div class="sum-item"><h3>🌊 Convection</h3><p>Transfer via <strong>circular currents</strong> in fluids. Hot rises, cool sinks — forming a continuous convection loop.</p></div>
     <div class="sum-item"><h3>☀️ Radiation</h3><p>Transfer via <strong>electromagnetic waves</strong>. Needs no medium — travels through vacuum like the Sun heating Earth.</p></div>
-    <div class="sum-item"><h3>🔧 Conductors vs Insulators</h3><p>Metals conduct heat quickly. Wood, rubber, plastic, and fabric are insulators that resist heat flow.</p></div>
-    <div class="sum-item"><h3>🎽 Dark vs Light Colors</h3><p>Dark surfaces absorb more radiation and heat up faster. Light surfaces reflect radiation and stay cooler in sunlight.</p></div>
-    <div class="sum-item"><h3>🌡️ Direction of Flow</h3><p>Heat <em>always</em> moves from higher to lower temperature — until thermal equilibrium is reached.</p></div>
   </div>
 </div>
 
@@ -406,11 +490,13 @@ footer strong{color:var(--text-mid);}
 </footer>
 
 <script>
+// Expose convection speed globally for the canvas
+window.convSpeed = 0.014;
+
 // ── CONVECTION: animated circular molecule paths on canvas ──
 (function(){
   const canvas = document.getElementById('conv-canvas');
   const box    = document.getElementById('conv-anim');
-  const potEl  = document.getElementById('pot-outer');
   const wArea  = document.getElementById('water-area');
 
   function resize(){
@@ -422,16 +508,10 @@ footer strong{color:var(--text-mid);}
 
   let t = 0;
 
-  // get water area rect relative to anim-box
   function waterRect(){
     const br = box.getBoundingClientRect();
     const wr = wArea.getBoundingClientRect();
-    return {
-      x: wr.left - br.left,
-      y: wr.top  - br.top,
-      w: wr.width,
-      h: wr.height
-    };
+    return { x: wr.left - br.left, y: wr.top  - br.top, w: wr.width, h: wr.height };
   }
 
   function draw(){
@@ -441,16 +521,14 @@ footer strong{color:var(--text-mid);}
     const r = waterRect();
     if(r.w < 10){ requestAnimationFrame(draw); return; }
 
-    // Two elliptical loops: left and right halves of the water area
     const loops = [
       { cx: r.x + r.w*.27, cy: r.y + r.h*.5, rx: r.w*.20, ry: r.h*.43, dir:  1, hotColor:'#ff6b35', coldColor:'#4a9cc0' },
       { cx: r.x + r.w*.73, cy: r.y + r.h*.5, rx: r.w*.20, ry: r.h*.43, dir: -1, hotColor:'#ff8c35', coldColor:'#5aafd0' }
     ];
 
-    t += 0.014;
+    t += window.convSpeed;
 
     loops.forEach(loop => {
-      // Draw dashed orbit path
       ctx.beginPath();
       ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, 0, Math.PI*2);
       ctx.strokeStyle = loop.dir===1 ? 'rgba(255,107,53,.15)' : 'rgba(74,156,192,.15)';
@@ -459,7 +537,6 @@ footer strong{color:var(--text-mid);}
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw directional arrowheads on path
       const arrowAngles = [0, Math.PI*.5, Math.PI, Math.PI*1.5];
       arrowAngles.forEach(a => {
         const x  = loop.cx + loop.rx * Math.cos(a);
@@ -478,14 +555,12 @@ footer strong{color:var(--text-mid);}
         ctx.fill();
       });
 
-      // 6 molecules per loop
       const N = 6;
       for(let i=0; i<N; i++){
         const phase  = (i/N)*Math.PI*2 + loop.dir*t;
         const mx = loop.cx + loop.rx * Math.cos(phase);
         const my = loop.cy + loop.ry * Math.sin(phase);
 
-        // normY: 0=top,1=bottom → bottom is hotter
         const normY = (my - r.y) / r.h;
         const isHot = normY > 0.5;
 
@@ -506,7 +581,6 @@ footer strong{color:var(--text-mid);}
         ctx.stroke();
         ctx.globalAlpha = 1;
 
-        // Speed blur for hot molecules at bottom
         if(isHot){
           const bx = mx - loop.dir * loop.rx * Math.sin(phase) * .15;
           const by = my + loop.dir * loop.ry * Math.cos(phase) * .15;
@@ -524,6 +598,82 @@ footer strong{color:var(--text-mid);}
   }
 
   draw();
+})();
+
+// ── NEW: SLIDER CONTROLLER LOGIC ──
+(function initSliders() {
+
+  function setupSlider(prefix) {
+    const slider = document.getElementById(`${prefix}-slider`);
+    const valText = document.getElementById(`${prefix}-val`);
+    const tempOverlay = document.getElementById(`${prefix}-temp`);
+    const descText = document.getElementById(`${prefix}-dynamic-desc`);
+    const animBox = document.getElementById(`${prefix}-anim`);
+
+    slider.addEventListener('input', (e) => {
+      const percentage = e.target.value;
+      
+      // Update UI texts
+      valText.textContent = `${percentage}%`;
+      
+      // Calculate realistic temperature scale (150C up to 800C)
+      const currentTemp = Math.floor(150 + (percentage / 100) * 650);
+      tempOverlay.textContent = currentTemp;
+
+      // Make the track of the slider fill with orange dynamically
+      slider.style.background = `linear-gradient(to right, #ff6b35 ${percentage}%, #333 ${percentage}%)`;
+
+      // Scale visual parameters using percentages
+      const size = 1 + (percentage / 100) * 0.6;
+      const bright = 1 + (percentage / 100) * 0.4;
+      const tOuterSpeed = 0.45 - (percentage / 100) * 0.3; // Goes down to 0.15s
+      const heatSpreadSpeed = 2.8 - (percentage / 100) * 1.8; // Goes down to 1.0s
+
+      // Apply localized variables to the specific animation box
+      animBox.style.setProperty('--flame-size', size);
+      animBox.style.setProperty('--flame-bright', bright);
+      animBox.style.setProperty('--t-outer-speed', tOuterSpeed + 's');
+      animBox.style.setProperty('--t-inner-speed', (tOuterSpeed * 0.7) + 's');
+      animBox.style.setProperty('--pf-speed', (tOuterSpeed * 1.2) + 's');
+      animBox.style.setProperty('--heat-spread-speed', heatSpreadSpeed + 's');
+
+      if (prefix === 'conv') {
+        window.convSpeed = 0.014 + (percentage / 100) * 0.035;
+      }
+
+      // Determine Description text based on thresholds
+      let textUpdate = "";
+      if (percentage < 33) {
+        textUpdate = prefix === 'cond' 
+          ? "Gentle heat. Molecules vibrate slowly, and energy passes gradually along the rod."
+          : "Gentle heat. Water warms slowly, creating a mild and steady convection current.";
+      } else if (percentage < 67) {
+        textUpdate = prefix === 'cond'
+          ? "Moderate heat. Increased molecular collisions cause the heat to spread noticeably faster."
+          : "Moderate heat. Water expands faster, speeding up the circular currents as hot water rises quicker.";
+      } else {
+        textUpdate = prefix === 'cond'
+          ? "Intense heat! Molecules vibrate violently, rapidly transferring thermal energy to the cool end."
+          : "Intense heat! Rapid energy transfer causes the water to boil vigorously with fast rolling currents.";
+      }
+
+      // Only crossfade the text if the string actually needs to change
+      if (descText.innerText !== textUpdate) {
+        descText.style.opacity = 0;
+        setTimeout(() => {
+          descText.innerText = textUpdate;
+          descText.style.opacity = 1;
+        }, 150);
+      }
+    });
+
+    // Trigger input event to setup initial state
+    slider.dispatchEvent(new Event('input'));
+  }
+
+  // Initialize both card sliders
+  setupSlider('cond');
+  setupSlider('conv');
 })();
 </script>
 </body>
